@@ -5,122 +5,74 @@ use frame_support::{assert_noop, assert_ok, BoundedVec}; // 引入断言的一�
 fn test_module_works() {
 	assert_eq!(1, 1);
 }
-// #[test]
-// fn create_claim_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap();
+#[test]
+fn create_kitties_works() {
+	new_test_ext().execute_with(|| {
+		let kitty_id = 0;
+		let account_id = 1;
 
-// 		// 传入两个参数，发送方 AccountId = 1， key
-// 		// 断言返回结果
-// 		assert_ok!(PoeModule::create_claim(RuntimeOrign::signed(1), claim.clone()));
+		assert_eq!(KittiesModule::next_kitty_id(), kitty_id);
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
 
-// 		// 断言储存值 是否相等
-// 		assert_eq!(
-// 			Proofs::<Test>::get(&claim),
-// 			Some((1, frame_system::system::Pallet::<Test>::block_number()))
-// 		);
-// 	});
-// }
+		assert_eq!(KittiesModule::next_kitty_id(), kitty_id + 1);
+		assert_eq!(KittiesModule::kitties(kitty_id).is_some(), true);
+		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
+		assert_eq!(KittiesModule::kitty_parents(kitty_id), None);
 
-// #[test]
-// fn create_claim_failed_when_claim_already_exist() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap(); // key
+		crate::NextKittyId::<Test>::set(crate::KittyId::max_value());
 
-// 		// 断言已存在出错
-// 		assert_noop!(
-// 			PoeModule::create_claim(RuntimeOrign::signed(1), claim.clone()),
-// 			Error::<Test>::ProofAleadyExist
-// 		);
-// 	});
-// }
+		// 断言储存值 是否相等
+		assert_noop!(
+			KittiesModule::create(RuntimeOrigin::signed(account_id)),
+			Error::<Test>::InvalidKittyId
+		);
+	});
+}
 
-// #[test]
-// fn revoke_claim_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap(); // key
-// 		let _ = PoeModule::create_claim(RuntimeOrign::signed(1), claim.clone());
+#[test]
+fn breed_is_works() {
+	new_test_ext().execute_with(|| {
+		let kitty_id = 0;
+		let account_id = 1;
 
-// 		// 断言是否删除成功
-// 		assert_ok!(PoeModule::revoke_claim(RuntimeOrign::signed(1), claim.clone()));
-// 	});
-// }
+		// 断言已存在出错
+		assert_noop!(
+			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id),
+			Error::<Test>::SameKittyId
+		);
 
-// #[test]
-// fn revoke_claim_failed_when_claim_is_not_exist() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap(); // key
+		assert_noop!(
+			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id + 1),
+			Error::<Test>::InvalidKittyId
+		);
 
-// 		// 断言不存在，出错
-// 		assert_noop!(
-// 			PoeModule::revoke_claim(RuntimeOrign::signed(1), claim.clone()),
-// 			Error::<Test>::ClaimNotExist
-// 		);
-// 	});
-// }
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
 
-// #[test]
-// fn revoke_claim_failed_with_wrong_owner() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap(); // key
-// 		let _ = PoeModule::create_claim(RuntimeOrign::signed(1), claim.clone());
+		assert_eq!(KittiesModule::next_kitty_id(), kitty_id + 2);
 
-// 		// 断言用户不是owner，出错
-// 		assert_noop!(
-// 			PoeModule::revoke_claim(RuntimeOrign::signed(2), claim.clone()),
-// 			Error::<Test>::NotClaimOwner
-// 		);
-// 	});
-// }
+		assert_ok!(KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id + 1));
 
-// #[test]
-// fn transfer_claim_works_chack() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap(); // key
-// 		let _ = PoeModule::create_claim(RuntimeOrign::signed(1), claim.clone());
+		let breed_kitty_id = 2;
 
-// 		// 断言转移是否成功
-// 		assert_ok!(PoeModule::transfer_claim(RuntimeOrign::signed(1), 2, claim.clone()));
+		assert_eq!(KittiesModule::next_kitty_id(), breed_kitty_id + 1);
+		assert_eq!(KittiesModule::kitties(breed_kitty_id).is_some(), true);
+		assert_eq!(KittiesModule::kitty_owner(breed_kitty_id), Some(account_id));
+		assert_eq!(KittiesModule::kitty_parents(breed_kitty_id), Some((kitty_id, kitty_id + 1)));
+	});
+}
 
-// 		let bouned_claim: BoundedVec<u8, <T as Config>::MaxClaimLength> =
-// 			BoundedVec::<u8, T::MaxClaimLength>::try_from(claim.clone());
+#[test]
+fn transfer_is_works() {
+	new_test_ext().execute_with(|| {
+		let kitty_id = 0;
+		let account_id = 1;
+		let recipient = 2;
 
-// 		assert_noop!(&bouned_claim, Error::<Test>::ClaimTooLong);
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
 
-// 		// 断言转换 长度是否出错
-// 		assert_noop!(PoeModule::get(&bouned_claim), Error::<Test>::ClaimNotExist);
-
-// 		// 断言储存值 是否相等
-// 		assert_eq!(
-// 			Proofs::<Test>::get(&bouned_claim),
-// 			Some((2, frame_system::system::Pallet::<Test>::block_number()))
-// 		);
-// 	});
-// }
-
-// #[test]
-// fn transfer_claim_failed_with_wrong_owner() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap(); // key
-// 		let _ = PoeModule::create_claim(RuntimeOrign::signed(1), claim.clone());
-
-// 		// 断言权限
-// 		assert_noop!(
-// 			PoeModule::transfer_claim(RuntimeOrign::signed(2), 3, claim.clone()),
-// 			Error::<Test>::NotClaimOwner
-// 		);
-// 	});
-// }
-
-// #[test]
-// fn transfer_claim_failed_with_wrong_destination_owner() {
-// 	new_test_ext().execute_with(|| {
-// 		let claim = BoundedVec::try_from(vec![0, 1]).unwrap(); // key
-// 		let _ = PoeModule::create_claim(RuntimeOrign::signed(1), claim.clone());
-// 		// 断言是否转给自己
-// 		assert_noop!(
-// 			PoeModule::transfer_claim(RuntimeOrign::signed(1), 1, claim.clone()),
-// 			Error::<Test>::DestinationIsClaimOwner
-// 		);
-// 	});
-// }
+		// 断言已存在出错
+		assert_ok!(KittiesModule::transfer(RuntimeOrigin::signed(account_id), recipient, kitty_id));
+	});
+}

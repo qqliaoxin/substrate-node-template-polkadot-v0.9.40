@@ -61,10 +61,10 @@ impl pallet_kitties::Config for Test {
 impl pallet_insecure_randomness_collective_flip::Config for Test {}
 
 // Build genesis storage according to the mock runtime.
-// 测试的脚手架
+//  模拟链上内存存储
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut ext: sp_io::TestExternalities =
-		system::GenesisConfig::default().build_storage::<Test>().unwrap().into(); // 创世初始化
-	ext.extrinsic_with(|| System.set_block_number(1));
+		frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into(); // 创世初始化
+	ext.execute_with(|| System.set_block_number(1));
 	ext
 }

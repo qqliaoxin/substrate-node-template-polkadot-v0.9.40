@@ -5,6 +5,12 @@
 /// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 #[frame_support::pallet]
 pub mod pallet {
 	// use frame_support::{pallet_prelude::*, traits::TryStateSelect};
@@ -81,7 +87,7 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Error names should be descriptive.
 		InvalidKittyId,
-		SameKittyID,
+		SameKittyId,
 		NotOwner,
 	}
 
@@ -117,7 +123,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			ensure!(kitty_id_1 != kitty_id_2, Error::<T>::SameKittyID);
+			ensure!(kitty_id_1 != kitty_id_2, Error::<T>::SameKittyId);
 
 			ensure!(Kitties::<T>::contains_key(kitty_id_1), Error::<T>::InvalidKittyId);
 			ensure!(Kitties::<T>::contains_key(kitty_id_2), Error::<T>::InvalidKittyId);
