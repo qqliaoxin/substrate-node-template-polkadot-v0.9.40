@@ -54,7 +54,7 @@ impl system::Config for Test {
 
 impl pallet_kitties::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type MaxClaimLength = ConstU32<10>;
+	// type MaxClaimLength = ConstU32<10>;
 	type Randomness = Randomness;
 }
 
@@ -65,6 +65,6 @@ impl pallet_insecure_randomness_collective_flip::Config for Test {}
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut ext: sp_io::TestExternalities =
 		frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into(); // 创世初始化
-	ext.execute_with(|| System.set_block_number(1));
+	ext.execute_with(|| System::set_block_number(1));
 	ext
 }
