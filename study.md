@@ -12,5 +12,5 @@ cargo +nightly-2023-04-18  test --package pallet-kitties --lib -- tests --nocapt
 
 ## build
 ```
-cargo +nightly-2023-04-18 build --release
+cargo build --release
 ```
