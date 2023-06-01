@@ -165,7 +165,7 @@ pub mod pallet {
 
 			let owner = Self::kitty_owner(kitty_id).ok_or(Error::<T>::InvalidKittyId)?;
 			ensure!(owner == who, Error::<T>::InvalidKittyId);
-			//判断是否同一个
+
 			KittyOwner::<T>::insert(kitty_id, &recipient);
 			Self::deposit_event(Event::KittyTransfered { who, recipient, kitty_id });
 			Ok(())

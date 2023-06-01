@@ -1,10 +1,24 @@
 use super::*; // 引入模块的所用存储项
-use crate::{mock::*, Error}; // 引入 mock 的一些定义
+use crate::mock::{new_test_ext, Event, KittiesModule, RuntimeEvent, RuntimeOrigin, System, Test};
+// use crate::{mock::*, Error}; // 引入 mock 的一些定义
 use frame_support::{assert_noop, assert_ok, BoundedVec}; // 引入断言的一些方法
 #[test]
 fn test_module_works() {
 	assert_eq!(1, 1);
 }
+
+// unit-testing Even Test Checks
+// https://docs.substrate.io/test/unit-testing/
+// https://github.com/NetGodFather/SubstrateStarter/blob/f743bf6e03655ddcfb30bd55b02129ed96e0d17a/pallets/kitties/src/tests.rs
+
+// 测试创建一个 Kitty Events
+#[test]
+fn created_checks_events() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(1)));
+	})
+}
+
 #[test]
 fn create_kitties_works() {
 	new_test_ext().execute_with(|| {
@@ -35,7 +49,6 @@ fn breed_is_works() {
 		let kitty_id = 0;
 		let account_id = 1;
 
-		// 断言已存在出错
 		assert_noop!(
 			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id),
 			Error::<Test>::SameKittyId
@@ -72,7 +85,6 @@ fn transfer_is_works() {
 		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
 		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
 
-		// 断言已存在出错
 		assert_ok!(KittiesModule::transfer(RuntimeOrigin::signed(account_id), recipient, kitty_id));
 	});
 }
