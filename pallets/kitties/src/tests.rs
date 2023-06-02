@@ -62,8 +62,9 @@ fn create_kitties_works() {
 			KittiesModule::create(RuntimeOrigin::signed(account_id)),
 			Error::<Test>::InvalidKittyId
 		);
+		let kitty: Kitty = Kitties::<Test>::get(kitty_id).unwrap();
 
-		System::assert_has_event(Event::KittyCreated { who: alice, kitty_id, kitty }.into());
+		System::assert_has_event(Event::KittyCreated { who: account_id, kitty_id, kitty }.into());
 	});
 }
 
@@ -97,9 +98,10 @@ fn breed_is_works() {
 		assert_eq!(KittiesModule::kitty_owner(breed_kitty_id), Some(account_id));
 		assert_eq!(KittiesModule::kitty_parents(breed_kitty_id), Some((kitty_id, kitty_id + 1)));
 
-		let breed_kitty = KittiesModule::kitties(breed_kitty_id).expected("kitty breed");
+		let breed_kitty: Kitty = KittiesModule::kitties(breed_kitty_id).unwrap();
 		System::assert_has_event(
-			Event::KittyBreed { who: account_id, kitty_id, breed_kitty }.into(),
+			// Event::KittyBreed { who: account_id, kitty_id, kitty: Kitty::default() }.into(),
+			Event::KittyBreed { who: account_id, kitty_id, kitty: breed_kitty }.into(),
 		);
 	});
 }
