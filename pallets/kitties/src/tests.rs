@@ -73,6 +73,7 @@ fn breed_is_works() {
 	new_test_ext().execute_with(|| {
 		let kitty_id = 0;
 		let account_id = 1;
+		let breed_kitty_id = 2;
 
 		assert_noop!(
 			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id),
@@ -91,17 +92,16 @@ fn breed_is_works() {
 
 		assert_ok!(KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id + 1));
 
-		let breed_kitty_id = 2;
-
 		assert_eq!(KittiesModule::next_kitty_id(), breed_kitty_id + 1);
 		assert_eq!(KittiesModule::kitties(breed_kitty_id).is_some(), true);
 		assert_eq!(KittiesModule::kitty_owner(breed_kitty_id), Some(account_id));
 		assert_eq!(KittiesModule::kitty_parents(breed_kitty_id), Some((kitty_id, kitty_id + 1)));
 
-		let breed_kitty: Kitty = KittiesModule::kitties(breed_kitty_id).unwrap();
-		System::assert_has_event(
+		let breed_kitty: Kitty = KittiesModule::kitties(breed_kitty_id).expect("Kitty Breed");
+		System::assert_last_event(
 			// Event::KittyBreed { who: account_id, kitty_id, kitty: Kitty::default() }.into(),
-			Event::KittyBreed { who: account_id, kitty_id, kitty: breed_kitty }.into(),
+			Event::KittyBreed { who: account_id, kitty_id: breed_kitty_id, kitty: breed_kitty }
+				.into(),
 		);
 	});
 }
