@@ -40,49 +40,6 @@ fn created_checks_events() {
 		assert_eq!(System::events().len(), 1);
 	})
 }
-// https://github.com/shiyivei/substrate-advanced-course/blob/fdd14d4a6f307667842898f84abbc8b532eee19d/lesson4/backend/pallets/kitties/src/tests.rs
-#[test]
-fn breed_checks_events() {
-	new_test_ext().execute_with(|| {
-		// Dispatch a signed extrinsic.
-		System::set_block_number(1);
-
-		let alice: u64 = ALICE;
-		let kitty_id_1 = NextKittyId::<Test>::get();
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(alice)));
-
-		let kitty_id_2 = NextKittyId::<Test>::get();
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(alice)));
-
-		let new_kitty_id = NextKittyId::<Test>::get();
-
-		//断言是否创建成功
-		assert_ok!(KittiesModule::breed(RuntimeOrigin::signed(alice), kitty_id_1, kitty_id_2));
-
-		//断言新创建的kitty持有人是当前创建者
-		assert_eq!(KittyOwner::<Test>::get(new_kitty_id), Some(alice));
-
-		//断言kitty已经存储,assert_ne 和 None
-		// 双重否定（即断言成功），为什么要使用这个，因为我们无法判断生成的kitty的具体值，
-		// 但是可以确定它是有值还是无值，所以就可以使用这种方式来对存在性进行判断
-		assert_ne!(Kitties::<Test>::get(new_kitty_id), None);
-
-		//断言下一个kitty的id
-		// assert_eq!(NextKittyId::<Test>::get(), new_kitty_id.add(&1));
-
-		// //断言被资金被锁定
-		// assert_eq!(
-		// 	<Test as Config>::Currency::reserved_balance(&alice),
-		// 	<Test as Config>::KittyPrice::get().checked_mul(3).unwrap()
-		// );
-
-		//测试event
-		let kitty = Kitties::<Test>::get(new_kitty_id).unwrap();
-
-		System::assert_has_event(Event::KittyBreed { who: alice, kitty_id_1, kitty_id_2 }.into());
-		assert_eq!(System::events().len(), 1);
-	})
-}
 
 #[test]
 fn create_kitties_works() {
@@ -105,6 +62,8 @@ fn create_kitties_works() {
 			KittiesModule::create(RuntimeOrigin::signed(account_id)),
 			Error::<Test>::InvalidKittyId
 		);
+
+		System::assert_has_event(Event::KittyCreated { who: alice, kitty_id, kitty }.into());
 	});
 }
 
@@ -137,6 +96,11 @@ fn breed_is_works() {
 		assert_eq!(KittiesModule::kitties(breed_kitty_id).is_some(), true);
 		assert_eq!(KittiesModule::kitty_owner(breed_kitty_id), Some(account_id));
 		assert_eq!(KittiesModule::kitty_parents(breed_kitty_id), Some((kitty_id, kitty_id + 1)));
+
+		let breed_kitty = KittiesModule::kitties(breed_kitty_id).expected("kitty breed");
+		System::assert_has_event(
+			Event::KittyBreed { who: account_id, kitty_id, breed_kitty }.into(),
+		);
 	});
 }
 
@@ -151,5 +115,9 @@ fn transfer_is_works() {
 		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
 
 		assert_ok!(KittiesModule::transfer(RuntimeOrigin::signed(account_id), recipient, kitty_id));
+
+		System::assert_has_event(
+			Event::KittyTransfered { who: account_id, kitty_id, recipient }.into(),
+		);
 	});
 }
