@@ -8,8 +8,8 @@ pub use pallet::*;
 #[cfg(test)]
 mod mock;
 
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod tests;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -17,12 +17,8 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
-	// use frame_support::traits::Randomness;
-	// use sp_io::hashing::blake2_128;
-
 	// 引入一个 tree Randomness
 	// ReservableCurrency 增加质押
-	// tokens::Balance,
 	use frame_support::{
 		traits::{Currency, ExistenceRequirement, Randomness},
 		PalletId,

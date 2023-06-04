@@ -236,7 +236,6 @@ impl pallet_timestamp::Config for Runtime {
 
 /// Existential deposit.
 pub const EXISTENTIAL_DEPOSIT: u128 = 500;
-// pub const KITTYPALLETID: PalletId = PalletId(*b"py/kitty");
 
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
