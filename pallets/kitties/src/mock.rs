@@ -1,8 +1,12 @@
 use crate as pallet_kitties;
-// use frame_support::traits::{ConstU16, ConstU32, ConstU64};
-use frame_support::traits::{ConstU16, ConstU64};
+use crate as pallet_balances;
+
+use frame_support::{
+	traits::{ConstU128, ConstU16, ConstU64},
+	PalletId,
+};
 use frame_system as system;
-use sp_core::H256;
+use sp_core::{Get, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -23,6 +27,8 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		KittiesModule: pallet_kitties,
 		Randomness: pallet_insecure_randomness_collective_flip,
+		Balances: pallet_balances,
+		// KittyPalletId: Get<PalletId>,
 	}
 );
 
@@ -57,6 +63,9 @@ impl pallet_kitties::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	// type MaxClaimLength = ConstU32<10>;
 	type Randomness = Randomness;
+	type Currency = Balances;
+	type KittyPrice = ConstU128<512>;
+	type PalletId = KittyPalletId;
 }
 
 impl pallet_insecure_randomness_collective_flip::Config for Test {}
