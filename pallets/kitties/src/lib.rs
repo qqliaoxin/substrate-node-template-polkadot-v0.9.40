@@ -22,8 +22,9 @@ pub mod pallet {
 
 	// 引入一个 tree Randomness
 	// ReservableCurrency 增加质押
+	// tokens::Balance,
 	use frame_support::{
-		traits::{tokens::Balance, Currency, ExistenceRequirement, Randomness},
+		traits::{Currency, ExistenceRequirement, Randomness},
 		PalletId,
 	};
 	use sp_runtime::traits::AccountIdConversion;
