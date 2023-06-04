@@ -29,7 +29,8 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
+		ConstU128, ConstU32, ConstU64, ConstU8, Currency, Get, KeyOwnerProofSystem, Randomness,
+		StorageInfo,
 	},
 	weights::{
 		constants::{
@@ -37,7 +38,7 @@ pub use frame_support::{
 		},
 		IdentityFee, Weight,
 	},
-	StorageValue,
+	PalletId, StorageValue,
 };
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
@@ -150,6 +151,8 @@ parameter_types! {
 	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
 		::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub const SS58Prefix: u8 = 42;
+
+	pub KittyPalletId: PalletId = PalletId(*b"py/kitty");
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -233,6 +236,7 @@ impl pallet_timestamp::Config for Runtime {
 
 /// Existential deposit.
 pub const EXISTENTIAL_DEPOSIT: u128 = 500;
+// pub const KITTYPALLETID: PalletId = PalletId(*b"py/kitty");
 
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
@@ -273,8 +277,12 @@ impl pallet_template::Config for Runtime {
 impl pallet_kitties::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Randomness = RandomnessCollectiveFlip;
+	type Currency = Balances;
+	type KittyPrice = ConstU128<512>;
+	type PalletId = KittyPalletId;
 }
 impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
+// impl kitty_Price::Config for Runtime {}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -285,7 +293,6 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system,
-		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 		Timestamp: pallet_timestamp,
 		Aura: pallet_aura,
 		Grandpa: pallet_grandpa,
@@ -295,6 +302,7 @@ construct_runtime!(
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
 		KittiesModule: pallet_kitties,
+		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 	}
 );
 
