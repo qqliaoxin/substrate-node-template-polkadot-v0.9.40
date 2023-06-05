@@ -1,11 +1,10 @@
 use crate as pallet_kitties;
-use crate as pallet_balances;
 use frame_support::{
-	traits::{ConstU128, ConstU16, ConstU64},
+	traits::{ConstU16, ConstU64},
 	PalletId,
 };
 use frame_system as system;
-use sp_core::{Get, H256};
+use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -26,12 +25,13 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		KittiesModule: pallet_kitties,
 		Randomness: pallet_insecure_randomness_collective_flip,
+		// Balances: pallet_balances::{Pallet, Call, RuntimeEvent<T>, Storage},
 		Balances: pallet_balances,
 	}
 );
-
+// #[warn(unused_imports)]
 frame_support::parameter_types! {
-	pub const KittyPalletId: PalletId = PalletId(*b"py/kitty");
+	pub const SContractPalletId: PalletId = PalletId(*b"py/kitty");
 }
 
 impl system::Config for Test {
@@ -63,13 +63,27 @@ impl system::Config for Test {
 
 impl pallet_kitties::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
+	// type MaxClaimLength = ConstU32<10>;
 	type Randomness = Randomness;
 	type Currency = Balances;
-	type KittyPrice = ConstU128<512>;
-	type PalletId = KittyPalletId;
+	type KittyPrice = ConstU64<256>;
+	type PalletId = SContractPalletId;
 }
 
 impl pallet_insecure_randomness_collective_flip::Config for Test {}
+
+impl pallet_balances::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
+	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type Balance = u64;
+	type DustRemoval = ();
+	type ExistentialDeposit = ConstU64<256>;
+	type AccountStore = System;
+	type WeightInfo = ();
+	// type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+}
 
 // Build genesis storage according to the mock runtime.
 //  模拟链上内存存储
