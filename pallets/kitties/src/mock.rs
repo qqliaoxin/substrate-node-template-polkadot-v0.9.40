@@ -1,6 +1,5 @@
 use crate as pallet_kitties;
 use crate as pallet_balances;
-
 use frame_support::{
 	traits::{ConstU128, ConstU16, ConstU64},
 	PalletId,
@@ -28,9 +27,12 @@ frame_support::construct_runtime!(
 		KittiesModule: pallet_kitties,
 		Randomness: pallet_insecure_randomness_collective_flip,
 		Balances: pallet_balances,
-		// KittyPalletId: Get<PalletId>,
 	}
 );
+
+frame_support::parameter_types! {
+	pub const KittyPalletId: PalletId = PalletId(*b"py/kitty");
+}
 
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -61,7 +63,6 @@ impl system::Config for Test {
 
 impl pallet_kitties::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	// type MaxClaimLength = ConstU32<10>;
 	type Randomness = Randomness;
 	type Currency = Balances;
 	type KittyPrice = ConstU128<512>;

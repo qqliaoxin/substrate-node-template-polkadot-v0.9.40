@@ -123,3 +123,18 @@ fn transfer_is_works() {
 		);
 	});
 }
+
+// #[test]
+// fn sale_is_works() {
+// 	new_test_ext().execute_with(|| {
+// 		let kitty_id = 0;
+// 		let account_id = 1;
+
+// 		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+// 		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
+
+// 		assert_ok!(KittiesModule::sale(RuntimeOrigin::signed(account_id), kitty_id));
+
+// 		System::assert_has_event(Event::KittyOnSale { who: account_id, kitty_id }.into());
+// 	});
+// }
