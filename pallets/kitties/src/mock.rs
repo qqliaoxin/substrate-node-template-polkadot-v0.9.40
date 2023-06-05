@@ -1,8 +1,10 @@
 use crate as pallet_kitties;
+
 use pallet_balances;
 use pallet_insecure_randomness_collective_flip;
 
 use frame_support::{
+	construct_runtime, parameter_types,
 	traits::{ConstU16, ConstU64},
 	PalletId,
 };
@@ -17,7 +19,7 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 // Configure a mock runtime to test the pallet.
-frame_support::construct_runtime!(
+construct_runtime!(
 	pub enum Test where
 		Block = Block,
 		NodeBlock = Block,
@@ -29,8 +31,8 @@ frame_support::construct_runtime!(
 		Balances: pallet_balances,
 	}
 );
-// #[warn(unused_imports)]
-frame_support::parameter_types! {
+
+parameter_types! {
 	pub const SContractPalletId: PalletId = PalletId(*b"py/kitty");
 }
 /// Balance of an account.
