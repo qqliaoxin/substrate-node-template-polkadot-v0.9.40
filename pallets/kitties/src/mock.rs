@@ -1,4 +1,7 @@
 use crate as pallet_kitties;
+use pallet_balances;
+use pallet_insecure_randomness_collective_flip;
+
 use frame_support::{
 	traits::{ConstU16, ConstU64},
 	PalletId,
@@ -9,8 +12,6 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
-
-use pallet_insecure_randomness_collective_flip;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -25,7 +26,6 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		KittiesModule: pallet_kitties,
 		Randomness: pallet_insecure_randomness_collective_flip,
-		// Balances: pallet_balances::{Pallet, Call, RuntimeEvent<T>, Storage},
 		Balances: pallet_balances,
 	}
 );
@@ -33,6 +33,8 @@ frame_support::construct_runtime!(
 frame_support::parameter_types! {
 	pub const SContractPalletId: PalletId = PalletId(*b"py/kitty");
 }
+/// Balance of an account.
+pub type Balance = u64;
 
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -52,7 +54,8 @@ impl system::Config for Test {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	// type AccountData = ();
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -63,7 +66,6 @@ impl system::Config for Test {
 
 impl pallet_kitties::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	// type MaxClaimLength = ConstU32<10>;
 	type Randomness = Randomness;
 	type Currency = Balances;
 	type KittyPrice = ConstU64<256>;
@@ -82,7 +84,6 @@ impl pallet_balances::Config for Test {
 	type ExistentialDeposit = ConstU64<256>;
 	type AccountStore = System;
 	type WeightInfo = ();
-	// type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
 // Build genesis storage according to the mock runtime.
