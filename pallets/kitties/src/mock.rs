@@ -5,7 +5,7 @@ use pallet_insecure_randomness_collective_flip;
 
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU16, ConstU64},
+	traits::{ConstU128, ConstU16, ConstU64},
 	PalletId,
 };
 use frame_system as system;
@@ -33,10 +33,14 @@ construct_runtime!(
 );
 
 parameter_types! {
-	pub const SContractPalletId: PalletId = PalletId(*b"py/kitty");
+	pub const KittyPalletId: PalletId = PalletId(*b"py/kitty");
+	pub KittyPrice: Balance = EXISTENTIAL_DEPOSIT * 1000;
 }
+
+pub type AccountId = u64;
 /// Balance of an account.
-pub type Balance = u64;
+pub type Balance = u128;
+pub const EXISTENTIAL_DEPOSIT: Balance = 500;
 
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -49,7 +53,7 @@ impl system::Config for Test {
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type RuntimeEvent = RuntimeEvent;
@@ -70,8 +74,8 @@ impl pallet_kitties::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Randomness = Randomness;
 	type Currency = Balances;
-	type KittyPrice = ConstU64<256>;
-	type PalletId = SContractPalletId;
+	type KittyPrice = KittyPrice;
+	type PalletId = KittyPalletId;
 }
 
 impl pallet_insecure_randomness_collective_flip::Config for Test {}
@@ -81,9 +85,9 @@ impl pallet_balances::Config for Test {
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
-	type Balance = u64;
+	type Balance = Balance;
 	type DustRemoval = ();
-	type ExistentialDeposit = ConstU64<256>;
+	type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT>;
 	type AccountStore = System;
 	type WeightInfo = ();
 }
