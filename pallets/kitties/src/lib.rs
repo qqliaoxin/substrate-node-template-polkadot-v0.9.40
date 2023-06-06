@@ -4,6 +4,7 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
+mod migrations;
 
 #[cfg(test)]
 mod mock;
@@ -27,6 +28,9 @@ pub mod pallet {
 
 	// 为了让每个 kitty 随机数都不一样
 	use sp_io::hashing::blake2_128;
+
+	use crate::migrations;
+
 	pub type KittyId = u32;
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -34,9 +38,17 @@ pub mod pallet {
 	#[derive(
 		Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq, Default, TypeInfo, MaxEncodedLen,
 	)]
-	pub struct Kitty(pub [u8; 16]);
+	//pub struct Kitty(pub [u8; 16]);
+	//修改 Kitty 结构
+	pub struct Kitty {
+		pub dna: [u8; 16],
+		pub name: [u8; 4],
+	}
 
+	// 升级版本
+	const VERSION: StorageVersion = StorageVersion::new(1);
 	#[pallet::pallet]
+	#[pallet::storage_version(VERSION)]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -120,6 +132,13 @@ pub mod pallet {
 		AlreadyOwner,
 	}
 
+	//升级所需要的 Hooks
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_runtime_upgrade() -> Weight {
+			migrations::kittyv1::migrate::<T>();
+		}
+	}
+
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
@@ -129,11 +148,14 @@ pub mod pallet {
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn create(origin: OriginFor<T>) -> DispatchResult {
+		pub fn create(origin: OriginFor<T>, name: [u8; 4]) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
 			let kitty_id = Self::get_next_id()?;
-			let kitty = Kitty(Self::random_value(&who));
+			// let kitty = Kitty(Self::random_value(&who));
+			let dna = Self::random_value(&who);
+
+			let kitty = Kitty { dna, name };
 
 			let price = T::KittyPrice::get();
 			// T::Currency::reserve(&who, price)?;
@@ -158,6 +180,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			kitty_id_1: KittyId,
 			kitty_id_2: KittyId,
+			name: [u8; 4],
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -173,12 +196,15 @@ pub mod pallet {
 			// 得到一个随机数
 			let selector = Self::random_value(&who);
 
-			let mut data = [0u8; 16];
-			for i in 0..kitty_1.0.len() {
-				// 当随机数0 取第一个，随机数是 1时，取后面那个
-				data[i] = (kitty_1.0[i] & selector[i]) | (kitty_2.0[i] & !selector[i]);
-			}
-			let kitty: Kitty = Kitty(data);
+			// let mut data = [0u8; 16];
+			// for i in 0..kitty_1.0.len() {
+			// 	// 当随机数0 取第一个，随机数是 1时，取后面那个
+			// 	data[i] = (kitty_1.0[i] & selector[i]) | (kitty_2.0[i] & !selector[i]);
+			// }
+			// let kitty: Kitty = Kitty(data);
+
+			let dna = [0u8; 16];
+			let kitty = Kitty { dna, name };
 
 			let price = T::KittyPrice::get();
 			// T::Currency::reserve(&who, price)?;
