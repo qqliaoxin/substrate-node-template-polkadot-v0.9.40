@@ -38,17 +38,17 @@ pub mod pallet {
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 	#[derive(
-		Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq, Default, TypeInfo, MaxEncodedLen,
+		Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, Default, TypeInfo, MaxEncodedLen,
 	)]
-	//pub struct Kitty(pub [u8; 16]);
+	//pub struct Kitty(pub [u8; 16]); Copy
 	//修改 Kitty 结构
 	pub struct Kitty {
-		pub name: [u8; 4],
+		pub name: [u8; 8],
 		pub dna: [u8; 16],
 	}
 
 	// 升级版本
-	const VERSION: StorageVersion = StorageVersion::new(1);
+	const VERSION: StorageVersion = StorageVersion::new(2);
 	#[pallet::pallet]
 	#[pallet::storage_version(VERSION)]
 	pub struct Pallet<T>(_);
@@ -138,7 +138,7 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_runtime_upgrade() -> Weight {
-			migrations::kittyv1::migrate::<T>()
+			migrations::kittyv2::migrate::<T>()
 		}
 
 		fn on_finalize(_n: BlockNumberFor<T>) {}
@@ -165,7 +165,7 @@ pub mod pallet {
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn create(origin: OriginFor<T>, name: [u8; 4]) -> DispatchResult {
+		pub fn create(origin: OriginFor<T>, name: [u8; 8]) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
 			let kitty_id = Self::get_next_id()?;
@@ -197,7 +197,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			kitty_id_1: KittyId,
 			kitty_id_2: KittyId,
-			name: [u8; 4],
+			name: [u8; 8],
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
