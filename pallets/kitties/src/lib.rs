@@ -22,8 +22,10 @@ pub mod pallet {
 	// ReservableCurrency 增加质押
 	use frame_support::{
 		traits::{Currency, ExistenceRequirement, Randomness},
+		weights::Weight,
 		PalletId,
 	};
+
 	use sp_runtime::traits::AccountIdConversion;
 
 	// 为了让每个 kitty 随机数都不一样
@@ -41,8 +43,8 @@ pub mod pallet {
 	//pub struct Kitty(pub [u8; 16]);
 	//修改 Kitty 结构
 	pub struct Kitty {
-		pub dna: [u8; 16],
 		pub name: [u8; 4],
+		pub dna: [u8; 16],
 	}
 
 	// 升级版本
@@ -133,10 +135,25 @@ pub mod pallet {
 	}
 
 	//升级所需要的 Hooks
+	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_runtime_upgrade() -> Weight {
-			migrations::kittyv1::migrate::<T>();
+			migrations::kittyv1::migrate::<T>()
 		}
+
+		fn on_finalize(_n: BlockNumberFor<T>) {}
+
+		fn on_idle(_n: BlockNumberFor<T>, _remaining_weight: Weight) -> Weight {
+			Weight::zero()
+		}
+
+		fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
+			Weight::zero()
+		}
+
+		fn offchain_worker(_n: BlockNumberFor<T>) {}
+
+		fn integrity_test() {}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -190,11 +207,11 @@ pub mod pallet {
 			ensure!(Kitties::<T>::contains_key(kitty_id_2), Error::<T>::InvalidKittyId);
 
 			let kitty_id = Self::get_next_id()?;
-			let kitty_1 = Self::kitties(kitty_id_1).ok_or(Error::<T>::InvalidKittyId)?;
-			let kitty_2 = Self::kitties(kitty_id_2).ok_or(Error::<T>::InvalidKittyId)?;
+			// let kitty_1 = Self::kitties(kitty_id_1).ok_or(Error::<T>::InvalidKittyId)?;
+			// let kitty_2 = Self::kitties(kitty_id_2).ok_or(Error::<T>::InvalidKittyId)?;
 
-			// 得到一个随机数
-			let selector = Self::random_value(&who);
+			// // 得到一个随机数
+			// let selector = Self::random_value(&who);
 
 			// let mut data = [0u8; 16];
 			// for i in 0..kitty_1.0.len() {

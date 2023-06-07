@@ -1,9 +1,9 @@
+use crate::{Config, Kitties, Kitty, KittyId, Pallet};
 use frame_support::{
-	migration::storage_key_iter, pallet_prelude::*, storage::StoragePrefixedMap,
-	traits::GetStorageVersion, weights::Weight, Blake2_128Concat,
+	migration::storage_key_iter, pallet_prelude::*, traits::GetStorageVersion, weights::Weight,
+	StoragePrefixedMap,
 };
-use frame_system::{pallet_prelude::*, Config};
-pub use pallet::*;
+
 #[derive(
 	Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq, Default, TypeInfo, MaxEncodedLen,
 )]
@@ -14,7 +14,11 @@ pub fn migrate<T: Config>() -> Weight {
 	let on_chain_version = Pallet::<T>::on_chain_storage_version();
 	let current_version = Pallet::<T>::current_storage_version();
 
-	if on_chain_version != 0 && current_version != 1 {
+	if current_version != 1 {
+		return Weight::zero()
+	}
+
+	if on_chain_version != 0 {
 		return Weight::zero()
 	}
 
@@ -25,8 +29,8 @@ pub fn migrate<T: Config>() -> Weight {
 	for (index, kitty) in
 		storage_key_iter::<KittyId, OldKitty, Blake2_128Concat>(module, items).drain()
 	{
-		let new_kitty = Kitty { name: *b"kitty" + &index, dna: kitty.0 };
+		let new_kitty = Kitty { name: *b"1234", dna: kitty.0 };
 		Kitties::<T>::insert(index, &new_kitty);
 	}
-	Weight::zero();
+	Weight::zero()
 }
