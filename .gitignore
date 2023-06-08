@@ -9,5 +9,6 @@
 # direnv files
 .envrc
 .direnv
+node-template
 
 Cargo.lock
