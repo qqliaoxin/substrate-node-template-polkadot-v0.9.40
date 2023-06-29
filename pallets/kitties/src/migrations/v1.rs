@@ -23,14 +23,14 @@ pub fn upgrade_v1<T: Config>(current_version: StorageVersion) -> Weight {
 	// 旧kitty 存储的数据
 	let items = Kitties::<T>::storage_prefix();
 
-	for (index, kitty) in
+	for (_index, kitty) in
 		storage_key_iter::<KittyId, Kitty, Blake2_128Concat>(module, items).drain()
 	{
 		// let mut _name = kitty.name;
 		// _name[..1].copy_from_slice(b"v1");
 		// _name[12] = index as u8;
 		let _name = *b"v1_ketty_id_1";
-		let new_kitty = Kitty { name: _name, dna: kitty.dna };
+		let _new_kitty = Kitty { name: _name, dna: kitty.dna };
 		// Kitties::<T>::insert(index, &new_kitty);
 	}
 	Weight::zero()
